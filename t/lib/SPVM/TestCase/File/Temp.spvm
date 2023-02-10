@@ -1,0 +1,7 @@
+class TestCase::File::Temp {
+  use File::Temp;
+  static method test : int () {
+    
+    return 1;
+  }
+}
