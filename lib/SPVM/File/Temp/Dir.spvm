@@ -1,28 +1,24 @@
 class File::Temp::Dir {
-  use IO::File;
   use Sys::FileTest;
   use File::Path;
   
   allow File::Temp;
   
-  has dirname : string;
-  has realname : string;
-  has cleanup : byte;
-  has launchpid : int;
-
-  static method TEMPXXX : string () { return "XXXXXXXXXX"; }
+  has dirname : ro string;
+  has realname : private string;
 
   # Class Methods
-  static method new : File::Temp::Dir ($options = undef : object[]) {
+  private static method new : File::Temp::Dir () {
     my $self = new File::Temp::Dir;
-
-=pod
     
-    $self->{dirs_to_unlink} = Hash->new;
-    
-=cut
-
     return $self;
+  }
+  private method DESTROY : void () {
+    my $realname = $self->{realname};
+    
+    if ($realname && Sys::FileTest->d($realname)) {
+      File::Path->rmtree($realname);
+    }
   }
 }
 
