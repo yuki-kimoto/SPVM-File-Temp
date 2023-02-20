@@ -13,14 +13,21 @@ class File::Temp::Dir {
   static method TEMPXXX : string () { return "XXXXXXXXXX"; }
 
   # Class Methods
-  static method new : ($options = undef : object[]) {
+  static method new : File::Temp::Dir ($options = undef : object[]) {
     my $self = new File::Temp::Dir;
+
+=pod
     
     $self->{dirs_to_unlink} = Hash->new;
     
+=cut
+
     return $self;
   }
-  
+}
+
+=pod
+
   private static method tempdir : string () {
     # Default options
     my %options = (
@@ -157,3 +164,5 @@ HERE
     }
   }
 }
+
+=cut

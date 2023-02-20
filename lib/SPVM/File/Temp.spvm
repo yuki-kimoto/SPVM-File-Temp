@@ -3,10 +3,14 @@ class File::Temp {
   use Hash;
   use Cwd;
   use Sys::Process;
+  use File::Path;
   
   # Class Methods
   static method newdir : File::Temp::Dir ($options = undef : object[])  {
-    my $self = shift;
+
+    my $obj_temp_dir = File::Temp::Dir->new;
+
+=pod
     
     my $options_h = Hash->new($options)->clone;
     
@@ -24,6 +28,8 @@ class File::Temp {
     $options_h->set_int(LAUNCHPID => $process_id);
     
     my $obj_temp_dir = File::Temp::Dir->new($options_h);
+
+=cut
     
     return $obj_temp_dir;
   }
