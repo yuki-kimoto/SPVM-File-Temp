@@ -7,19 +7,29 @@ class File::Temp {
   use Fn;
   use Errno;
   use Time;
-
+  use Sys::FileTest;
+  use Format;
+  
   # Class Methods
   static method newdir : File::Temp::Dir ()  {
-
-    my $dirname = &_get_temp_dir();
     
     my $obj_temp_dir = File::Temp::Dir->new;
+
+    my $object_id_peseud_string = Format->sprintf("%p", $obj_temp_dir);
+    my $seed = (int)Time->time;
+    my $len = length $object_id_peseud_string;
+    for (my $i = length $object_id_peseud_string - 1; $i >= 0; $i--) {
+      $seed += $object_id_peseud_string->[$i] * (10 * $i);
+    }
+    
+    my $dirname = &_get_temp_dir(\$seed);
+    
     $obj_temp_dir->{dirname} = $dirname;
     
     return $obj_temp_dir;
   }
   
-  private static method _get_temp_dir : string () {
+  private static method _get_temp_dir : string ($seed_ref : int*) {
     
     my $template = "XXXXXXXXXX";
     
@@ -27,23 +37,20 @@ class File::Temp {
     unless ($temp_dir_root) {
       die "A template root directory can't be got";
     }
-
+    
     my $max_try_count = 1000;
     my $found_temp_dir = (string)undef;
     for (my $i = 0; $i < $max_try_count; $i++) {
-      my $template_random = &_replace_XX($template);
+      
+      my $template_random = &_replace_XX($template, $seed_ref);
+      
       my $temp_dir = File::Spec->catfile([$temp_dir_root], $template_random);
       
-      eval { Sys::IO->mkdir($temp_dir, 0700); };
-      if ($@) {
-        if (error == class_id Error::System && Errno->errno == Errno->EEXIST) {
-          # Retry
-        }
-        else {
-          die $@;
-        }
+      if (Sys::FileTest->e($temp_dir)) {
+        # Retry
       }
       else {
+        Sys::IO->mkdir($temp_dir, 0700);
         Sys::IO->chmod($temp_dir, 0700);
         $found_temp_dir = $temp_dir;
         last;
@@ -53,7 +60,7 @@ class File::Temp {
     return $found_temp_dir;
   }
   
-  private static method _replace_XX : string ($template : string) {
+  private static method _replace_XX : string ($template : string, $seed_ref : int*) {
     
     my $chars = [
       'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
@@ -61,12 +68,11 @@ class File::Temp {
       '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '_',
     ];
     
-    my $seed = (int)Time->time;
     my $template_random = (mutable string)copy $template;
     for (my $i = 0; $i < length $template_random; $i++) {
       my $template_char = $template_random->[$i];
       if ($template_char == 'X') {
-        my $random_char = $chars->[(int)(Fn->rand(\$seed) * @$chars)];
+        my $random_char = $chars->[(int)(Fn->rand($seed_ref) * @$chars)];
         $template_random->[$i] = $random_char;
       }
     }
