@@ -5,7 +5,6 @@ class File::Temp::Dir {
   allow File::Temp;
   
   has dirname : ro string;
-  has _dirname_abs : private string;
 
   # Class Methods
   private static method new : File::Temp::Dir () {
@@ -14,10 +13,10 @@ class File::Temp::Dir {
     return $self;
   }
   private method DESTROY : void () {
-    my $dirname_abs = $self->{_dirname_abs};
+    my $dirname = $self->{dirname};
     
-    if ($dirname_abs && Sys::FileTest->d($dirname_abs)) {
-      File::Path->rmtree($dirname_abs);
+    if ($dirname && Sys::FileTest->d($dirname)) {
+      File::Path->rmtree($dirname);
     }
   }
 }

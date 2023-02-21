@@ -51,6 +51,7 @@ WriteMakefile(
     'SPVM::File::Path' => '0.01',
     'SPVM::File::Spec' => '0.03',
     'SPVM::IO' => '0.16',
+    'SPVM::Errno' => '0.07',
   },
   TEST_REQUIRES => {
     
