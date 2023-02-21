@@ -6,32 +6,22 @@ class File::Temp {
   use File::Path;
   
   # Class Methods
-  static method newdir : File::Temp::Dir ($options = undef : object[])  {
-
+  static method newdir : File::Temp::Dir ()  {
+    
+    my $dirname = &tempdir();
+    
+    my $dirname_abs = Cwd->abs_path($dirname);
+    
     my $obj_temp_dir = File::Temp::Dir->new;
-
-=pod
-    
-    my $options_h = Hash->new($options)->clone;
-    
-    unless ($options_h->exists("CLEANUP")) {
-      $options_h->set_int("CLEANUP" => 1);
-    }
-    
-    my $temp_dir = File::Temp::Dir->tempdir;
-    $options_h->set_string(DIRNAME => $temp_dir);
-    
-    my $real_dir = Cwd->abs_path($temp_dir);
-    $options_h->set_string(REALNAME => $real_dir);
-    
-    my $process_id = Sys::Process->getpid;
-    $options_h->set_int(LAUNCHPID => $process_id);
-    
-    my $obj_temp_dir = File::Temp::Dir->new($options_h);
-
-=cut
+    $obj_temp_dir->{dirname} = $dirname;
+    $obj_temp_dir->{_dirname_abs} = $dirname_abs;
     
     return $obj_temp_dir;
+  }
+  
+  static method tempdir : string () {
+    
+    return undef;
   }
 }
 
