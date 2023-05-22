@@ -2,7 +2,7 @@
 # MIT License
 
 class File::Temp {
-  version "0.010";
+  version "0.021";
   
   use File::Temp::Dir;
   use Hash;
