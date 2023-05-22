@@ -6,11 +6,11 @@ use FindBin;
 use lib "$FindBin::Bin/lib";
 BEGIN { $ENV{SPVM_BUILD_DIR} = "$FindBin::Bin/.spvm_build"; }
 
-use SPVM 'File::Temp';
-use SPVM::File::Temp;
-use SPVM 'Fn';
-
 use SPVM 'TestCase::File::Temp';
+
+use SPVM 'Fn';
+use SPVM::File::Temp;
+use SPVM 'File::Temp';
 
 ok(SPVM::TestCase::File::Temp->test);
 
