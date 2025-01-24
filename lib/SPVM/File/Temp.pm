@@ -10,7 +10,7 @@ SPVM::File::Temp - Creating Temporary Files and Directories
 
 =head1 Description
 
-The File::Temp class in L<SPVM> has methods to create temporary files and directories.
+File::Temp class in L<SPVM> has methods to create temporary files and directories.
 
 =head1 Usage
 
