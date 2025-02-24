@@ -9,7 +9,132 @@ class File::Temp {
   use Sys;
   use Format;
   
+  has fh : ro IO::File;
+  
+  has filename : string;
+  
+  has UNLINK : byte;
+  
+  has DIR : string;
+  
+  has EXLOCK : byte;
+  
+  has PERMS : int;
+  
+  has SUFFIX : string;
+  
+  has TEMPLATE : string;
+  
+  has TMPDIR : byte;
+  
+  has process_id : int;
+  
   # Class Methods
+  static method new : File::Temp ($options : object[] = undef) {
+    
+    Fn->check_option_names($options, $self->option_names);
+    
+    my $options_h = Hash->new($options);
+    
+    my $self = new File::Temp;
+    
+    if ($options_h->exists("UNLINK")) {
+      $self->{UNLINK} = (byte)$options_h->get_int("UNLINK");
+    }
+    else {
+      $self->{UNLINK} = 1;
+    }
+    
+    $self->{DIR} = $options_h->get_or_default_string("DIR", undef);
+    
+    $self->{TMPDIR} = (byte)$options_h->get_or_default_int("TMPDIR", 0);
+    
+    $self->{EXLOCK} = (byte)$options_h->get_or_default_int("EXLOCK", 0);
+    
+    $self->{PERMS} = $options_h->get_or_default_int("PERMS", 0666);
+    
+    $self->{SUFFIX} = $options_h->get_or_default_string("SUFFIX", "");
+    
+    $self->{TEMPLATE} = $options_h->get_or_default_string("TEMPLATE", undef);
+    
+    my $results = $self->_tempfile;
+    my $fh = $results->[0]->(IO::File);
+    my $filename = $results->[1]->(string);
+    
+    $self->{fh} = $fh;
+    
+    $self->{filename} = $filename;
+    
+    my $process_id = Sys->process_id;
+    
+    $self->{process_id} = $process_id;
+    
+    return $self;
+  }
+  
+  private method _tempfile : object[] ($options_h : Hash) {
+    
+    my $TEMPLATE = $self->{TEMPLATE};
+    
+    my $DIR = $self->{DIR};
+    
+    my $TMPDIR = $self->{TMPDIR};
+    
+    if ($TEMPLATE) {
+      if ($DIR) {
+        $TEMPLATE = File::Spec->catfile($DIR, $TEMPLATE);
+      }
+      elsif ($TMPDIR) {
+        $template = File::Spec->catfile($TMPDIR, $TEMPLATE);
+      }
+    }
+    else {
+      if ($DIR) {
+        $template = File::Spec->catfile($DIR, TEMPXXX);
+      }
+      else {
+        $template = File::Spec->catfile(_wrap_file_spec_tmpdir(), TEMPXXX);
+      }
+    }
+
+    # Now add a suffix
+    $template .= $options{"SUFFIX"};
+
+    # Determine whether we should tell _gettemp to unlink the file
+    # On unix this is irrelevant and can be worked out after the file is
+    # opened (simply by unlinking the open filehandle). On Windows or VMS
+    # we have to indicate temporary-ness when we open the file. In general
+    # we only want a true temporary file if we are returning just the
+    # filehandle - if the user wants the filename they probably do not
+    # want the file to disappear as soon as they close it (which may be
+    # important if they want a child process to use the file)
+    # For this reason, tie unlink_on_close to the return context regardless
+    # of OS.
+    my $unlink_on_close = ( wantarray ? 0 : 1);
+
+    # Create the file
+    my ($fh, $path, $errstr);
+    croak "Error in tempfile() using template $template: $errstr"
+      unless (($fh, $path) = _gettemp($template,
+                                      "open"             => $options{OPEN},
+                                      "mkdir"            => 0,
+                                      "unlink_on_close"  => $unlink_on_close,
+                                      "suffixlen"        => length($options{SUFFIX}),
+                                      "ErrStr"           => \$errstr,
+                                      "use_exlock"       => $options{EXLOCK},
+                                      "file_permissions" => $options{PERMS},
+                                     ) );
+
+    return [(object)$fh, $filename];
+  }
+  
+  protected method option_names {
+    
+    my $options_names = ["UNLINK", "DIR", "EXLOCK", "PERMS", "SUFFIX", "TEMPLATE"];
+    
+    return $options_names;
+  }
+  
   static method newdir : File::Temp::Dir ()  {
     
     my $obj_temp_dir = File::Temp::Dir->new;
@@ -78,4 +203,5 @@ class File::Temp {
     
     return $template_random;
   }
+  
 }
