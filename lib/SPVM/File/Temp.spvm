@@ -17,10 +17,6 @@ class File::Temp {
   
   has DIR : string;
   
-  has EXLOCK : byte;
-  
-  has PERMS : int;
-  
   has SUFFIX : string;
   
   has TEMPLATE : string;
@@ -49,9 +45,7 @@ class File::Temp {
     
     $self->{TMPDIR} = (byte)$options_h->get_or_default_int("TMPDIR", 0);
     
-    $self->{EXLOCK} = (byte)$options_h->get_or_default_int("EXLOCK", 0);
-    
-    $self->{PERMS} = $options_h->get_or_default_int("PERMS", 0666);
+    my $perms = 0666;
     
     $self->{SUFFIX} = $options_h->get_or_default_string("SUFFIX", "");
     
