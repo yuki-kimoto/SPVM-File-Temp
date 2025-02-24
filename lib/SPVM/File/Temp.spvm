@@ -85,7 +85,7 @@ class File::Temp {
         $TEMPLATE = File::Spec->catfile($DIR, $TEMPLATE);
       }
       elsif ($TMPDIR) {
-        $template = File::Spec->catfile($TMPDIR, $TEMPLATE);
+        $template = File::Spec->catfile(File::Spec->tmpdir, $TEMPLATE);
       }
     }
     else {
@@ -93,12 +93,13 @@ class File::Temp {
         $template = File::Spec->catfile($DIR, TEMPXXX);
       }
       else {
-        $template = File::Spec->catfile(_wrap_file_spec_tmpdir(), TEMPXXX);
+        $template = File::Spec->catfile(File::Spec->tmpdir, TEMPXXX);
       }
     }
 
-    # Now add a suffix
-    $template .= $options{"SUFFIX"};
+    my $SUFFIX = $self->{SUFFIX};
+    
+    $template .= $SUFFIX;
 
     # Determine whether we should tell _gettemp to unlink the file
     # On unix this is irrelevant and can be worked out after the file is
