@@ -9,19 +9,20 @@ class File::Temp {
   use Sys;
   use Format;
   
+  # Fields
   has fh : ro IO::File;
   
   has filename : string;
   
-  has UNLINK : byte;
-  
   has DIR : string;
   
-  has SUFFIX : string;
+  has TMPDIR : byte;
   
   has TEMPLATE : string;
   
-  has TMPDIR : byte;
+  has SUFFIX : string;
+  
+  has UNLINK : byte;
   
   has process_id : int;
   
@@ -45,8 +46,6 @@ class File::Temp {
     
     $self->{TMPDIR} = (byte)$options_h->get_or_default_int("TMPDIR", 0);
     
-    my $perms = 0666;
-    
     $self->{SUFFIX} = $options_h->get_or_default_string("SUFFIX", "");
     
     $self->{TEMPLATE} = $options_h->get_or_default_string("TEMPLATE", undef);
@@ -67,6 +66,8 @@ class File::Temp {
   }
   
   private method _tempfile : object[] ($options_h : Hash) {
+    
+    my $perms = 0666;
     
     my $TEMPLATE = $self->{TEMPLATE};
     
@@ -125,7 +126,7 @@ class File::Temp {
   
   protected method option_names {
     
-    my $options_names = ["UNLINK", "DIR", "EXLOCK", "PERMS", "SUFFIX", "TEMPLATE"];
+    my $options_names = ["DIR", "TMPDIR", "TEMPLATE", "SUFFIX", "UNLINK"];
     
     return $options_names;
   }
