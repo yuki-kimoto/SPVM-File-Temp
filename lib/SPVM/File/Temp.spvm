@@ -67,6 +67,10 @@ class File::Temp {
     return 4;
   }
   
+  private static method MAX_TRIES : int () {
+    return 1000;
+  }
+  
   private method _tempfile : void () {
     
     my $DIR = $self->{DIR};
@@ -114,76 +118,32 @@ class File::Temp {
     
     my $seed = $suffixlen;
     my $path = &_replace_XX($template, \$seed);
+    
+    my $parts = File::Spec->splitpath($path);
+    my $volume = $parts->[0];
+    my $directories = $parts->[1];
+    my $file = $parts->[2];
+    
+    my $parent = File::Spec->catpath($volume, $directories, "");
+    
+    unless ($directories ne "") {
+      $parent = File::Spec->curdir;
+    }
+    
+    unless (Sys->e($parent)) {
+      die "Parent directory ($parent) does not exist.";
+    }
+    
+    unless (Sys->d($parent)) {
+      die "Parent directory ($parent) is not a directory";
+    }
 
 =pod
 
-    # Split the path into constituent parts - eventually we need to check
-    # whether the directory exists
-    # We need to know whether we are making a temp directory
-    # or a tempfile
-
-    my ($volume, $directories, $file);
-    my $parent;                   # parent directory
-    {
-
-      # Get rid of the last filename (use File::Basename for this?)
-      ($volume, $directories, $file) = File::Spec->splitpath( $path );
-
-      # Join up without the file part
-      $parent = File::Spec->catpath($volume,$directories,'');
-
-      # If $parent is empty replace with curdir
-      $parent = File::Spec->curdir
-        unless $directories ne '';
-
-    }
-
-    # Check that the parent directories exist
-    # Do this even for the case where we are simply returning a name
-    # not a file -- no point returning a name that includes a directory
-    # that does not exist or is not writable
-
-    unless (-e $parent) {
-      ${$options{ErrStr}} = "Parent directory ($parent) does not exist";
-      return ();
-    }
-    unless (-d $parent) {
-      ${$options{ErrStr}} = "Parent directory ($parent) is not a directory";
-      return ();
-    }
-
-    # Check the stickiness of the directory and chown giveaway if required
-    # If the directory is world writable the sticky bit
-    # must be set
-
-    if (File::Temp->safe_level == MEDIUM) {
-      my $safeerr;
-      unless (_is_safe($parent,\$safeerr)) {
-        ${$options{ErrStr}} = "Parent directory ($parent) is not safe ($safeerr)";
-        return ();
-      }
-    } elsif (File::Temp->safe_level == HIGH) {
-      my $safeerr;
-      unless (_is_verysafe($parent, \$safeerr)) {
-        ${$options{ErrStr}} = "Parent directory ($parent) is not safe ($safeerr)";
-        return ();
-      }
-    }
-
-    my $perms = $options{file_permissions};
-    my $has_perms = defined $perms;
-    $perms = 0600 unless $has_perms;
-
-    # Now try MAX_TRIES time to open the file
     for (my $i = 0; $i < MAX_TRIES; $i++) {
 
       {
         my $fh;
-
-        # If we are running before perl5.6.0 we can not auto-vivify
-        if ($] < 5.006) {
-          $fh = &Symbol::gensym;
-        }
 
         # Try to make sure this will be marked close-on-exec
         # XXX: Win32 doesn't respect this, nor the proper fcntl,
