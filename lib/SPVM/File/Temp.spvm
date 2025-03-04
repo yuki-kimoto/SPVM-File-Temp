@@ -72,13 +72,9 @@ class File::Temp {
     my $obj_temp_dir = File::Temp::Dir->new;
     
     my $object_id_peseud_string = Format->sprintf("%p", [(object)$obj_temp_dir]);
-    my $seed = (int)Sys->time;
     my $len = length $object_id_peseud_string;
-    for (my $i = length $object_id_peseud_string - 1; $i >= 0; $i--) {
-      $seed += $object_id_peseud_string->[$i] * (10 * $i);
-    }
     
-    my $dirname = &_get_temp_dir(\$seed);
+    my $dirname = &_get_temp_dir();
     
     $obj_temp_dir->{dirname} = $dirname;
     
@@ -133,7 +129,7 @@ class File::Temp {
     }
     
     my $seed = $suffixlen;
-    my $path = &_replace_XX($template, \$seed);
+    my $path = &_replace_XX($template);
     
     my $parts = File::Spec->splitpath($path);
     my $volume = $parts->[0];
@@ -170,7 +166,7 @@ class File::Temp {
       my $counter = 0;
       my $max_guess = 50;
       while (1) {
-        $path = &_replace_XX($template, \$seed);
+        $path = &_replace_XX($template);
         $counter++;
         if ($path ne $original || $counter > $max_guess) {
           last;
@@ -183,7 +179,7 @@ class File::Temp {
     }
   }
   
-  private static method _get_temp_dir : string ($seed_ref : int*) {
+  private static method _get_temp_dir : string () {
     
     my $template = "XXXXXXXXXX";
     
@@ -196,7 +192,7 @@ class File::Temp {
     my $found_temp_dir = (string)undef;
     for (my $i = 0; $i < $max_try_count; $i++) {
       
-      my $template_random = &_replace_XX($template, $seed_ref);
+      my $template_random = &_replace_XX($template);
       
       my $temp_dir = File::Spec->catfile([$temp_dir_root], $template_random);
       
@@ -214,7 +210,7 @@ class File::Temp {
     return $found_temp_dir;
   }
   
-  private static method _replace_XX : string ($template : string, $seed_ref : int*) {
+  private static method _replace_XX : string ($template : string) {
     
     my $chars = [
       'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
@@ -226,7 +222,7 @@ class File::Temp {
     for (my $i = 0; $i < length $template_random; $i++) {
       my $template_char = $template_random->[$i];
       if ($template_char == 'X') {
-        my $random_char = $chars->[(int)(Fn->rand($seed_ref) * @$chars)];
+        my $random_char = $chars->[(int)(Sys->rand * @$chars)];
         $template_random->[$i] = $random_char;
       }
     }
