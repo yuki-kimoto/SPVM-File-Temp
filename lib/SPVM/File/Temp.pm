@@ -23,6 +23,9 @@ File::Temp class in L<SPVM> has methods to create temporary files and directorie
   
   $tmp_fh->print("Hello World!");
   
+  # With options
+  my $tmp_fh = File::Temp->new({DIR => $dir, TEMPLATE => $template, UNLINK => 0});
+  
   # Create a temporary directory
   my $tmp_dir = File::Temp->newdir;
   
