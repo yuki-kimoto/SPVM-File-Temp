@@ -72,7 +72,7 @@ class File::Temp extends IO::File {
     my $object_id_peseud_string = Format->sprintf("%p", [(object)$obj_temp_dir]);
     my $len = length $object_id_peseud_string;
     
-    my $dirname = &_get_temp_dir();
+    my $dirname = &_tempdir();
     
     $obj_temp_dir->{dirname} = $dirname;
     
@@ -104,36 +104,29 @@ class File::Temp extends IO::File {
     
     my $TMPDIR = $self->{TMPDIR};
     
-    my $TEMPLATE = $self->{TEMPLATE};
+    my $template = $self->{TEMPLATE};
     
-    if ($TEMPLATE) {
+    if ($template) {
       if ($DIR) {
-        $TEMPLATE = File::Spec->catfile([$DIR], $TEMPLATE);
+        $template = File::Spec->catfile([$DIR], $template);
       }
       elsif ($TMPDIR) {
-        $TEMPLATE = File::Spec->catfile([File::Spec->tmpdir], $TEMPLATE);
+        $template = File::Spec->catfile([File::Spec->tmpdir], $template);
       }
     }
     else {
       my $tempxxx = Fn->repeat("X", 10);
       if ($DIR) {
-        $TEMPLATE = File::Spec->catfile([$DIR], $tempxxx);
+        $template = File::Spec->catfile([$DIR], $tempxxx);
       }
       else {
-        $TEMPLATE = File::Spec->catfile([File::Spec->tmpdir], $tempxxx);
+        $template = File::Spec->catfile([File::Spec->tmpdir], $tempxxx);
       }
     }
     
     my $SUFFIX = $self->{SUFFIX};
     
-    $TEMPLATE .= $SUFFIX;
-    
-    $self->_gettemp($TEMPLATE);
-  }
-  
-  private method _gettemp : void ($template : string) {
-    
-    my $SUFFIX = $self->{SUFFIX};
+    $template .= $SUFFIX;
     
     my $suffixlen = length $SUFFIX;
     my $perms = 0666;
@@ -196,7 +189,7 @@ class File::Temp extends IO::File {
     }
   }
   
-  private static method _get_temp_dir : string () {
+  private static method _tempdir : string () {
     
     my $template = "XXXXXXXXXX";
     
