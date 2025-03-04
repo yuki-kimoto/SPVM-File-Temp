@@ -8,6 +8,7 @@ class File::Temp {
   use Fn;
   use Sys;
   use Format;
+  use Sys::IO::Constant as IOC;
   
   # Fields
   has fh : ro IO::File;
@@ -59,174 +60,6 @@ class File::Temp {
     return $self;
   }
   
-  private static method TEMPXXX : string () {
-    return Fn->repeat("X", 10);
-  }
-  
-  private static method MINX : int () {
-    return 4;
-  }
-  
-  private static method MAX_TRIES : int () {
-    return 1000;
-  }
-  
-  private method _tempfile : void () {
-    
-    my $DIR = $self->{DIR};
-    
-    my $TMPDIR = $self->{TMPDIR};
-    
-    my $TEMPLATE = $self->{TEMPLATE};
-    
-    if ($TEMPLATE) {
-      if ($DIR) {
-        $TEMPLATE = File::Spec->catfile([$DIR], $TEMPLATE);
-      }
-      elsif ($TMPDIR) {
-        $TEMPLATE = File::Spec->catfile([File::Spec->tmpdir], $TEMPLATE);
-      }
-    }
-    else {
-      if ($DIR) {
-        $TEMPLATE = File::Spec->catfile([$DIR], &TEMPXXX);
-      }
-      else {
-        $TEMPLATE = File::Spec->catfile([File::Spec->tmpdir], &TEMPXXX);
-      }
-    }
-    
-    my $SUFFIX = $self->{SUFFIX};
-    
-    $TEMPLATE .= $SUFFIX;
-    
-    $self->_gettemp($TEMPLATE);
-  }
-  
-  private method _gettemp : void ($template : string) {
-    
-    my $SUFFIX = $self->{SUFFIX};
-    
-    my $suffixlen = length $SUFFIX;
-    my $perms = 0666;
-    
-    my $start = length $template - 1 - $suffixlen;
-    
-    if (Fn->substr($template, $start - &MINX + 1, &MINX) ne Fn->repeat("X", &MINX)) {
-      die "The template must end with at least " . &MINX . " \"X\" characters.";
-    }
-    
-    my $seed = $suffixlen;
-    my $path = &_replace_XX($template, \$seed);
-    
-    my $parts = File::Spec->splitpath($path);
-    my $volume = $parts->[0];
-    my $directories = $parts->[1];
-    my $file = $parts->[2];
-    
-    my $parent = File::Spec->catpath($volume, $directories, "");
-    
-    unless ($directories ne "") {
-      $parent = File::Spec->curdir;
-    }
-    
-    unless (Sys->e($parent)) {
-      die "Parent directory ($parent) does not exist.";
-    }
-    
-    unless (Sys->d($parent)) {
-      die "Parent directory ($parent) is not a directory";
-    }
-
-=pod
-
-    for (my $i = 0; $i < MAX_TRIES; $i++) {
-
-      {
-        my $fh;
-
-        # Try to make sure this will be marked close-on-exec
-        # XXX: Win32 doesn't respect this, nor the proper fcntl,
-        #      but may have O_NOINHERIT. This may or may not be in Fcntl.
-        local $^F = 2;
-
-        # Attempt to open the file
-        my $open_success = undef;
-        if ( $^O eq 'VMS' and $options{"unlink_on_close"} && !$KEEP_ALL) {
-          # make it auto delete on close by setting FAB$V_DLT bit
-          $fh = VMS::Stdio::vmssysopen($path, $OPENFLAGS, $perms, 'fop=dlt');
-          $open_success = $fh;
-        } else {
-          my $flags = ( ($options{"unlink_on_close"} && !$KEEP_ALL) ?
-                        $OPENTEMPFLAGS :
-                        $OPENFLAGS );
-          $flags |= $LOCKFLAG if (defined $LOCKFLAG && $options{use_exlock});
-          $open_success = sysopen($fh, $path, $flags, $perms);
-        }
-        if ( $open_success ) {
-
-          # in case of odd umask force rw
-          chmod($perms, $path) unless $has_perms;
-
-          # Opened successfully - return file handle and name
-          return ($fh, $path);
-
-        } else {
-
-          # Error opening file - abort with error
-          # if the reason was anything but EEXIST
-          unless ($!{EEXIST}) {
-            ${$options{ErrStr}} = "Could not create temp file $path: $!";
-            return ();
-          }
-
-          # Loop round for another try
-
-        }
-      }
-
-      # Did not successfully open the tempfile/dir
-      # so try again with a different set of random letters
-      # No point in trying to increment unless we have only
-      # 1 X say and the randomness could come up with the same
-      # file MAX_TRIES in a row.
-
-      # Store current attempt - in principle this implies that the
-      # 3rd time around the open attempt that the first temp file
-      # name could be generated again. Probably should store each
-      # attempt and make sure that none are repeated
-
-      my $original = $path;
-      my $counter = 0;            # Stop infinite loop
-      my $MAX_GUESS = 50;
-
-      do {
-
-        # Generate new name from original template
-        $path = _replace_XX($template, $options{"suffixlen"});
-
-        $counter++;
-
-      } until ($path ne $original || $counter > $MAX_GUESS);
-
-      # Check for out of control looping
-      if ($counter > $MAX_GUESS) {
-        ${$options{ErrStr}} = "Tried to get a new temp name different to the previous value $MAX_GUESS times.\nSomething wrong with template?? ($template)";
-        return ();
-      }
-
-    }
-
-    # If we get here, we have run out of tries
-    ${ $options{ErrStr} } = "Have exceeded the maximum number of attempts ("
-      . MAX_TRIES . ") to open temp file/dir";
-
-    return ();
-
-=cut
-
-  }
-
   protected method option_names : string[] () {
     
     my $options_names = ["DIR", "TMPDIR", "TEMPLATE", "SUFFIX", "UNLINK"];
@@ -250,6 +83,104 @@ class File::Temp {
     $obj_temp_dir->{dirname} = $dirname;
     
     return $obj_temp_dir;
+  }
+  
+  private method _tempfile : void () {
+    
+    my $DIR = $self->{DIR};
+    
+    my $TMPDIR = $self->{TMPDIR};
+    
+    my $TEMPLATE = $self->{TEMPLATE};
+    
+    if ($TEMPLATE) {
+      if ($DIR) {
+        $TEMPLATE = File::Spec->catfile([$DIR], $TEMPLATE);
+      }
+      elsif ($TMPDIR) {
+        $TEMPLATE = File::Spec->catfile([File::Spec->tmpdir], $TEMPLATE);
+      }
+    }
+    else {
+      my $tempxxx = Fn->repeat("X", 10);
+      if ($DIR) {
+        $TEMPLATE = File::Spec->catfile([$DIR], $tempxxx);
+      }
+      else {
+        $TEMPLATE = File::Spec->catfile([File::Spec->tmpdir], $tempxxx);
+      }
+    }
+    
+    my $SUFFIX = $self->{SUFFIX};
+    
+    $TEMPLATE .= $SUFFIX;
+    
+    $self->_gettemp($TEMPLATE);
+  }
+  
+  private method _gettemp : void ($template : string) {
+    
+    my $SUFFIX = $self->{SUFFIX};
+    
+    my $suffixlen = length $SUFFIX;
+    my $perms = 0666;
+    
+    my $start = length $template - 1 - $suffixlen;
+    
+    my $minx = 4;
+    if (Fn->substr($template, $start - $minx + 1, $minx) ne Fn->repeat("X", $minx)) {
+      die "The template must end with at least " . $minx . " \"X\" characters.";
+    }
+    
+    my $seed = $suffixlen;
+    my $path = &_replace_XX($template, \$seed);
+    
+    my $parts = File::Spec->splitpath($path);
+    my $volume = $parts->[0];
+    my $directories = $parts->[1];
+    my $file = $parts->[2];
+    
+    my $parent = File::Spec->catpath($volume, $directories, "");
+    
+    unless ($directories ne "") {
+      $parent = File::Spec->curdir;
+    }
+    
+    unless (Sys->e($parent)) {
+      die "Parent directory ($parent) does not exist.";
+    }
+    
+    unless (Sys->d($parent)) {
+      die "Parent directory ($parent) is not a directory";
+    }
+    
+    my $max_tries = 1000;
+    for (my $i = 0; $i < $max_tries; $i++) {
+      
+      my $flags = IOC->O_CREAT | IOC->O_EXCL | IOC->O_RDWR;
+      
+      my $fh = (IO::File)undef;
+      eval {
+        my $fd = -1;
+        Sys->sysopen(\$fd, $path, $flags, $perms);
+        my $fh = IO::File->new_from_fd($fd, $flags);
+      }
+      
+      my $original = $path;
+      my $counter = 0;
+      my $max_guess = 50;
+      while (1) {
+        $path = &_replace_XX($template, \$seed);
+        $counter++;
+        if ($path ne $original || $counter > $max_guess) {
+          last;
+        }
+      } 
+      
+      if ($counter > $max_guess) {
+        die "tried to get a new temp name different to the previous value $max_guess times.\nsomething wrong with template?? ($template)";
+      }
+    }
   }
   
   private static method _get_temp_dir : string ($seed_ref : int*) {
