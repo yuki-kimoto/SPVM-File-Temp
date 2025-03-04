@@ -1,7 +1,7 @@
 # Copyright (c) 2023 Yuki Kimoto
 # MIT License
 
-class File::Temp {
+class File::Temp extends IO::File {
   version "0.023";
   
   use File::Temp::Dir;
