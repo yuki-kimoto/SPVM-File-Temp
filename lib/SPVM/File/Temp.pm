@@ -6,7 +6,7 @@ our $VERSION = "0.023";
 
 =head1 Name
 
-SPVM::File::Temp - Creating Temporary Files and Directories
+SPVM::File::Temp - Temporary Files and Directories
 
 =head1 Description
 
@@ -16,17 +16,76 @@ File::Temp class in L<SPVM> has methods to create temporary files and directorie
 
   use File::Temp;
   
+  # Create a temporary file
+  my $tmp_fh = File::Temp->new;
+  
+  my $tmp_filename = $tmp_fh->filename;
+  
+  $tmp_fh->print("Hello World!");
+  
+  # Create a temporary directory
   my $tmp_dir = File::Temp->newdir;
   
-  my $tmp_dir_name = $tmp_dir->dirname;
+  my $tmp_dirname = $tmp_dir->dirname;
+
+=head1 Super Class
+
+L<IO::File>
 
 =head1 Class Methods
+
+=head2 new
+
+C<static method new : L<File::Temp|SPVM::File::Temp> ($options : object[] = undef);>
+
+Creates a new L<File::Temp|SPVM::File::Temp> object given the options $options, and returns it.
+
+=head3 new Options
+
+=head4 DIR option
+
+C<DIR>
+
+Type:string, Default:undef
+
+=head4 TMPDIR option
+
+C<TMPDIR>
+
+Type:L<Int|SPVM::Int>, Default:0
+
+=head4 TEMPLATE option
+
+C<TEMPLATE>
+
+Type:string, Default:undef
+
+=head4 SUFFIX option
+
+C<SUFFIX>
+
+Type:string, Default:""
+
+=head4 UNLINK option
+
+C<UNLINK>
+
+Type:L<Int|SPVM::Int>, Default:1
 
 =head2 newdir
 
 C<static method newdir : L<File::Temp::Dir|SPVM::File::Temp::Dir> ();>
 
-Creates a temporary directory and returns a new L<File::Temp::Dir|SPVM::File::Temp::Dir> object.
+Creates a new L<File::Temp::Dir|SPVM::File::Temp::Dir> object for a temporary directory, and returns it.
+
+=head2 DESTROY
+
+C<method DESTROY : void ();>
+
+Closes the file descriptor if the file handle is opend.
+
+If L</"UNLINK option"> is a true value and the process ID of the process that created the temporary file is the same as the current process ID,
+removes the temporary file.
 
 =head1 Repository
 
