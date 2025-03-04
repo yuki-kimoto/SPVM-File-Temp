@@ -11,7 +11,7 @@ class File::Temp extends IO::File {
   use Sys::IO::Constant as IOC;
   
   # Fields
-  has filename : string;
+  has filename : ro string;
   
   has DIR : string;
   
@@ -77,6 +77,25 @@ class File::Temp extends IO::File {
     $obj_temp_dir->{dirname} = $dirname;
     
     return $obj_temp_dir;
+  }
+  
+  method DESTROY : void () {
+    
+    # TODO: $self->SUPER::DESTROY;
+    if ($self->opened) {
+      $self->close;
+    }
+    
+    my $UNLINK = $self->{UNLINK};
+    if ($UNLINK) {
+      my $was_created_by_proc = $self->{process_id} == Sys->process_id;
+      if ($was_created_by_proc) {
+        my $file = $self->filename;
+        Sys->chmod(0600, $file); # for windows
+        Sys->unlink($file);
+      }
+    }
+    
   }
   
   private method _tempfile : void () {
