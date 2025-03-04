@@ -11,8 +11,6 @@ class File::Temp extends IO::File {
   use Sys::IO::Constant as IOC;
   
   # Fields
-  has fh : ro IO::File;
-  
   has filename : string;
   
   has DIR : string;
