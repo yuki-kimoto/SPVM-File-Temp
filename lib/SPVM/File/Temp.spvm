@@ -115,7 +115,6 @@ class File::Temp extends IO::File {
       die "The template must end with at least " . $minx . " \"X\" characters.";
     }
     
-    my $seed = $suffixlen;
     my $path = &_replace_XX($template);
     
     my $parts = File::Spec->splitpath($path);
