@@ -47,10 +47,6 @@ class File::Temp::Dir {
     
     $self->{process_id} = $process_id;
     
-    my $object_id_peseud_string = Fn->sprintf("%p", [(object)$self]);
-    
-    my $len = length $object_id_peseud_string;
-    
     my $dirname = $self->_tempdir();
     
     $self->{dirname} = $dirname;
@@ -68,10 +64,24 @@ class File::Temp::Dir {
   
   method DESTROY : void () {
     
-    my $dirname = $self->{dirname};
-    
-    if ($dirname && Sys->d($dirname)) {
-      File::Path->rmtree($dirname);
+    my $CLEANUP = $self->{CLEANUP};
+    if ($CLEANUP) {
+      my $was_created_by_proc = $self->{process_id} == Sys->process_id;
+      if ($was_created_by_proc) {
+        
+        my $dirname = $self->{dirname};
+        
+        unless ($dirname) {
+          die "[Unexpected Error]\$dirname must be defined.";
+        }
+        
+        eval { File::Path->rmtree($dirname); }
+        
+        if ($@) {
+          warn $@;
+        }
+        
+      }
     }
     
   }
