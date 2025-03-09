@@ -11,10 +11,41 @@ class File::Temp::Dir {
   # Fields
   has dirname : ro string;
   
+  has DIR : string;
+  
+  has TMPDIR : byte;
+  
+  has TEMPLATE : string;
+  
+  has CLEANUP : byte;
+  
+  has process_id : int;
+  
   # Class Methods
   static method new : File::Temp::Dir ($options : object[]) {
     
     my $self = new File::Temp::Dir;
+    
+    Fn->check_option_names($options, $self->option_names);
+    
+    my $options_h = Hash->new($options);
+    
+    if ($options_h->exists("CLEANUP")) {
+      $self->{CLEANUP} = (byte)$options_h->get_int("CLEANUP");
+    }
+    else {
+      $self->{CLEANUP} = 1;
+    }
+    
+    $self->{DIR} = $options_h->get_or_default_string("DIR", undef);
+    
+    $self->{TMPDIR} = (byte)$options_h->get_or_default_int("TMPDIR", 0);
+    
+    $self->{TEMPLATE} = $options_h->get_or_default_string("TEMPLATE", undef);
+    
+    my $process_id = Sys->process_id;
+    
+    $self->{process_id} = $process_id;
     
     my $object_id_peseud_string = Fn->sprintf("%p", [(object)$self]);
     
