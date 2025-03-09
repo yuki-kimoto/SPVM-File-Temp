@@ -101,7 +101,8 @@ class File::Temp::Dir {
     
     my $max_try_count = 1000;
     my $found_temp_dir = (string)undef;
-    for (my $i = 0; $i < $max_try_count; $i++) {
+    my $try_count = 0;
+    while ($try_count < $max_try_count) {
       
       my $temp_dir = File::Temp->_replace_XX($template);
       
@@ -114,6 +115,12 @@ class File::Temp::Dir {
         $found_temp_dir = $temp_dir;
         last;
       }
+      
+      $try_count++;
+    }
+    
+    if ($try_count == $max_try_count) {
+      die "tried to get a new temp name different to the previous value $max_try_count times.\nsomething wrong with template?? ($template)";
     }
     
     return $found_temp_dir;
