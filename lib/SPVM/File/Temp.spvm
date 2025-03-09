@@ -4,6 +4,8 @@
 class File::Temp extends IO::File {
   version "0.023";
   
+  allow File::Temp::Dir;
+  
   use File::Temp::Dir;
   use Fn;
   use Sys;
@@ -65,18 +67,11 @@ class File::Temp extends IO::File {
     return $options_names;
   }
   
-  static method newdir : File::Temp::Dir ()  {
+  static method newdir : File::Temp::Dir ($options : object[] = undef)  {
     
-    my $obj_temp_dir = File::Temp::Dir->new;
+    my $temp_dir = File::Temp::Dir->new($options);
     
-    my $object_id_peseud_string = Format->sprintf("%p", [(object)$obj_temp_dir]);
-    my $len = length $object_id_peseud_string;
-    
-    my $dirname = &_tempdir();
-    
-    $obj_temp_dir->{dirname} = $dirname;
-    
-    return $obj_temp_dir;
+    return $temp_dir;
   }
   
   method DESTROY : void () {
@@ -187,37 +182,6 @@ class File::Temp extends IO::File {
         die "tried to get a new temp name different to the previous value $max_guess times.\nsomething wrong with template?? ($template)";
       }
     }
-  }
-  
-  private static method _tempdir : string () {
-    
-    my $template = "XXXXXXXXXX";
-    
-    my $temp_dir_root = File::Spec->tmpdir;
-    unless ($temp_dir_root) {
-      die "A template root directory can't be got";
-    }
-    
-    my $max_try_count = 1000;
-    my $found_temp_dir = (string)undef;
-    for (my $i = 0; $i < $max_try_count; $i++) {
-      
-      my $template_random = &_replace_XX($template);
-      
-      my $temp_dir = File::Spec->catfile([$temp_dir_root], $template_random);
-      
-      if (Sys->e($temp_dir)) {
-        # Retry
-      }
-      else {
-        Sys::IO->mkdir($temp_dir, 0700);
-        Sys::IO->chmod($temp_dir, 0700);
-        $found_temp_dir = $temp_dir;
-        last;
-      }
-    }
-    
-    return $found_temp_dir;
   }
   
   private static method _replace_XX : string ($template : string) {

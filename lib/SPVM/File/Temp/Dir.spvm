@@ -12,13 +12,22 @@ class File::Temp::Dir {
   has dirname : ro string;
   
   # Class Methods
-  static method new : File::Temp::Dir () {
+  static method new : File::Temp::Dir ($options : object[]) {
     
     my $self = new File::Temp::Dir;
+    
+    my $object_id_peseud_string = Fn->sprintf("%p", [(object)$self]);
+    
+    my $len = length $object_id_peseud_string;
+    
+    my $dirname = &_tempdir();
+    
+    $self->{dirname} = $dirname;
     
     return $self;
   }
   
+  # Instance Methods
   protected method option_names : string[] () {
     
     my $options_names = ["DIR", "TMPDIR", "TEMPLATE", "CLEANUP"];
@@ -34,6 +43,38 @@ class File::Temp::Dir {
       File::Path->rmtree($dirname);
     }
     
+  }
+  
+  # Private Class Methods
+  private static method _tempdir : string () {
+    
+    my $template = "XXXXXXXXXX";
+    
+    my $temp_dir_root = File::Spec->tmpdir;
+    unless ($temp_dir_root) {
+      die "A template root directory can't be got";
+    }
+    
+    my $max_try_count = 1000;
+    my $found_temp_dir = (string)undef;
+    for (my $i = 0; $i < $max_try_count; $i++) {
+      
+      my $template_random = File::Temp->_replace_XX($template);
+      
+      my $temp_dir = File::Spec->catfile([$temp_dir_root], $template_random);
+      
+      if (Sys->e($temp_dir)) {
+        # Retry
+      }
+      else {
+        Sys::IO->mkdir($temp_dir, 0700);
+        Sys::IO->chmod($temp_dir, 0700);
+        $found_temp_dir = $temp_dir;
+        last;
+      }
+    }
+    
+    return $found_temp_dir;
   }
   
 }
