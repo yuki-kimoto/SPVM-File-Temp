@@ -99,29 +99,11 @@ class File::Temp extends IO::File {
     
     my $TMPDIR = $self->{TMPDIR};
     
-    my $template = $self->{TEMPLATE};
-    
-    if ($template) {
-      if ($DIR) {
-        $template = File::Spec->catfile([$DIR], $template);
-      }
-      elsif ($TMPDIR) {
-        $template = File::Spec->catfile([File::Spec->tmpdir], $template);
-      }
-    }
-    else {
-      my $tempxxx = Fn->repeat("X", 10);
-      if ($DIR) {
-        $template = File::Spec->catfile([$DIR], $tempxxx);
-      }
-      else {
-        $template = File::Spec->catfile([File::Spec->tmpdir], $tempxxx);
-      }
-    }
+    my $TEMPLATE = $self->{TEMPLATE};
     
     my $SUFFIX = $self->{SUFFIX};
     
-    $template .= $SUFFIX;
+    my $template = &_make_template($TEMPLATE, $DIR, $TMPDIR, $SUFFIX);
     
     my $suffixlen = length $SUFFIX;
     my $perms = 0666;
@@ -182,6 +164,31 @@ class File::Temp extends IO::File {
         die "tried to get a new temp name different to the previous value $max_guess times.\nsomething wrong with template?? ($template)";
       }
     }
+  }
+  
+  private static method _make_template : string ($template : string, $DIR : string, $TMPDIR : int, $SUFFIX : string) {
+    
+    if ($template) {
+      if ($DIR) {
+        $template = File::Spec->catfile([$DIR], $template);
+      }
+      elsif ($TMPDIR) {
+        $template = File::Spec->catfile([File::Spec->tmpdir], $template);
+      }
+    }
+    else {
+      my $tempxxx = Fn->repeat("X", 10);
+      if ($DIR) {
+        $template = File::Spec->catfile([$DIR], $tempxxx);
+      }
+      else {
+        $template = File::Spec->catfile([File::Spec->tmpdir], $tempxxx);
+      }
+    }
+    
+    $template .= $SUFFIX;
+    
+    return $template;
   }
   
   private static method _replace_XX : string ($template : string) {
