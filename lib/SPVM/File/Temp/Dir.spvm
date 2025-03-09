@@ -99,20 +99,20 @@ class File::Temp::Dir {
     
     my $template = File::Temp->_make_template($TEMPLATE, $DIR, $TMPDIR, $SUFFIX);
     
-    my $found_temp_dir = (string)undef;
+    my $found_path = (string)undef;
     my $max_try_count = 1000;
     my $try_count = 0;
     while ($try_count < $max_try_count) {
       
-      my $temp_dir = File::Temp->_replace_XX($template);
+      my $path = File::Temp->_replace_XX($template);
       
-      if (Sys->e($temp_dir)) {
+      if (Sys->e($path)) {
         # Retry
       }
       else {
-        Sys::IO->mkdir($temp_dir, 0700);
-        Sys::IO->chmod($temp_dir, 0700);
-        $found_temp_dir = $temp_dir;
+        Sys::IO->mkdir($path, 0700);
+        Sys::IO->chmod($path, 0700);
+        $found_path = $path;
         last;
       }
       
@@ -123,7 +123,7 @@ class File::Temp::Dir {
       die "tried to get a new temp name different to the previous value $max_try_count times.\nsomething wrong with template?? ($template)";
     }
     
-    return $found_temp_dir;
+    return $found_path;
   }
   
 }
