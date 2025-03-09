@@ -106,13 +106,12 @@ class File::Temp::Dir {
       
       my $path = File::Temp->_replace_XX($template);
       
-      if (Sys->e($path)) {
-        # Retry
-      }
-      else {
+      eval {
         Sys::IO->mkdir($path, 0700);
-        Sys::IO->chmod($path, 0700);
         $found_path = $path;
+      }
+      
+      unless ($@) {
         last;
       }
       
