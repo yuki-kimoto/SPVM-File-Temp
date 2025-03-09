@@ -99,8 +99,8 @@ class File::Temp::Dir {
     
     my $template = File::Temp->_make_template($TEMPLATE, $DIR, $TMPDIR, $SUFFIX);
     
-    my $max_try_count = 1000;
     my $found_temp_dir = (string)undef;
+    my $max_try_count = 1000;
     my $try_count = 0;
     while ($try_count < $max_try_count) {
       
