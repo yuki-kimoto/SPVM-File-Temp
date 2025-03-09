@@ -51,7 +51,7 @@ class File::Temp::Dir {
     
     my $len = length $object_id_peseud_string;
     
-    my $dirname = &_tempdir();
+    my $dirname = $self->_tempdir();
     
     $self->{dirname} = $dirname;
     
@@ -77,22 +77,23 @@ class File::Temp::Dir {
   }
   
   # Private Class Methods
-  private static method _tempdir : string () {
+  private method _tempdir : string () {
     
-    my $template = "XXXXXXXXXX";
+    my $DIR = $self->{DIR};
     
-    my $temp_dir_root = File::Spec->tmpdir;
-    unless ($temp_dir_root) {
-      die "A template root directory can't be got";
-    }
+    my $TMPDIR = $self->{TMPDIR};
+    
+    my $TEMPLATE = $self->{TEMPLATE};
+    
+    my $SUFFIX = "";
+    
+    my $template = File::Temp->_make_template($TEMPLATE, $DIR, $TMPDIR, $SUFFIX);
     
     my $max_try_count = 1000;
     my $found_temp_dir = (string)undef;
     for (my $i = 0; $i < $max_try_count; $i++) {
       
-      my $template_random = File::Temp->_replace_XX($template);
-      
-      my $temp_dir = File::Spec->catfile([$temp_dir_root], $template_random);
+      my $temp_dir = File::Temp->_replace_XX($template);
       
       if (Sys->e($temp_dir)) {
         # Retry
