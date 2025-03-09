@@ -8,19 +8,32 @@ class File::Temp::Dir {
   
   allow File::Temp;
   
+  # Fields
   has dirname : ro string;
   
   # Class Methods
-  private static method new : File::Temp::Dir () {
+  static method new : File::Temp::Dir () {
+    
     my $self = new File::Temp::Dir;
     
     return $self;
   }
-  private method DESTROY : void () {
+  
+  protected method option_names : string[] () {
+    
+    my $options_names = ["DIR", "TMPDIR", "TEMPLATE", "CLEANUP"];
+    
+    return $options_names;
+  }
+  
+  method DESTROY : void () {
+    
     my $dirname = $self->{dirname};
     
     if ($dirname && Sys->d($dirname)) {
       File::Path->rmtree($dirname);
     }
+    
   }
+  
 }
