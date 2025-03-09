@@ -32,6 +32,8 @@ class File::Temp extends IO::File {
     
     my $self = new File::Temp;
     
+    $self->SUPER::init;
+    
     Fn->check_option_names($options, $self->option_names);
     
     my $options_h = Hash->new($options);
@@ -136,16 +138,14 @@ class File::Temp extends IO::File {
       die "Parent directory ($parent) is not a directory";
     }
     
-    my $max_tries = 1000;
-    for (my $i = 0; $i < $max_tries; $i++) {
+    my $max_try_count = 1000;
+    for (my $i = 0; $i < $max_try_count; $i++) {
       
-      my $flags = IOC->O_CREAT | IOC->O_EXCL | IOC->O_RDWR;
-      
-      my $fh = (IO::File)undef;
       eval {
+        my $flags = IOC->O_CREAT | IOC->O_EXCL | IOC->O_RDWR;
         my $fd = -1;
         Sys->sysopen(\$fd, $path, $flags, $perms);
-        my $fh = IO::File->new_from_fd($fd, $flags);
+        $self->fdopen($fd, $flags);
       }
       
       my $original = $path;
