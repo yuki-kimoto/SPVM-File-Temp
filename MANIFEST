@@ -15,4 +15,7 @@ MANIFEST			This list of files
 MANIFEST.SKIP
 README.md
 t/basic.t
+t/File-Temp-Dir.t
+t/File-Temp.t
 t/lib/SPVM/TestCase/File/Temp.spvm
+t/lib/SPVM/TestCase/File/Temp/Dir.spvm

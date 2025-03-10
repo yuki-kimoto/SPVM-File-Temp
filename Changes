@@ -1,3 +1,9 @@
+0.025 2025-03-11
+  [Bug Fix]
+    * Fix a bug that File::Temp::Dir#new method's arguments were not optional.
+  [Test Improvement]
+    * Add many tests.
+    
 0.024 2025-03-10
   [New Features]
     * Add File::Temp#new method.

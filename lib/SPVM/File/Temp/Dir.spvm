@@ -23,7 +23,7 @@ class File::Temp::Dir {
   has CLEANUP : byte;
   
   # Class Methods
-  static method new : File::Temp::Dir ($options : object[]) {
+  static method new : File::Temp::Dir ($options : object[] = undef) {
     
     my $self = new File::Temp::Dir;
     

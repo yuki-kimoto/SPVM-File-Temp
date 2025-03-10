@@ -1,4 +1,4 @@
-class TestCase::File::Temp {
+class TestCase::File::Temp::Dir {
   use File::Temp;
   use File::Spec;
   use File::Basename;
@@ -6,13 +6,13 @@ class TestCase::File::Temp {
   use List;
   use IO::File;
   
-  static method newdir : int () {
+  static method new : int () {
 
     # Basic
     {
       my $dirname = (string)undef;
       {
-        my $temp_dir = File::Temp->newdir;
+        my $temp_dir = File::Temp::Dir->new;
         $dirname = $temp_dir->dirname;
         
         warn "[Test Output]$dirname";
@@ -40,6 +40,33 @@ class TestCase::File::Temp {
       
       if (Sys->d($dirname)) {
         return 0;
+      }
+    }
+    
+    # Repeat
+    {
+      my $temp_dirs_list = List->new;
+      for (my $i = 0; $i < 1000; $i++) {
+        my $temp_dir = File::Temp::Dir->new;
+        $temp_dirs_list->push($temp_dir);
+        my $dirname = $temp_dir->dirname;
+        
+        unless (Sys->d($dirname)) {
+          return 0;
+        }
+      }
+    }
+    
+    {
+      my $temp_dirs_list = List->new;
+      for (my $i = 0; $i < 1000; $i++) {
+        my $temp_dir = File::Temp::Dir->new;
+        $temp_dirs_list->push($temp_dir);
+        my $dirname = $temp_dir->dirname;
+        
+        unless (Sys->d($dirname)) {
+          return 0;
+        }
       }
     }
     
