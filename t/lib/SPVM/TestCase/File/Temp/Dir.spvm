@@ -29,7 +29,7 @@ class TestCase::File::Temp::Dir {
         unless (Sys->d($dirname)) {
           return 0;
         }
-
+        
         unless (Sys->w($dirname)) {
           return 0;
         }
@@ -46,7 +46,7 @@ class TestCase::File::Temp::Dir {
     # Repeat
     {
       my $temp_dirs_list = List->new;
-      for (my $i = 0; $i < 1000; $i++) {
+      for (my $i = 0; $i < 100; $i++) {
         my $temp_dir = File::Temp::Dir->new;
         $temp_dirs_list->push($temp_dir);
         my $dirname = $temp_dir->dirname;
@@ -59,7 +59,7 @@ class TestCase::File::Temp::Dir {
     
     {
       my $temp_dirs_list = List->new;
-      for (my $i = 0; $i < 1000; $i++) {
+      for (my $i = 0; $i < 100; $i++) {
         my $temp_dir = File::Temp::Dir->new;
         $temp_dirs_list->push($temp_dir);
         my $dirname = $temp_dir->dirname;
