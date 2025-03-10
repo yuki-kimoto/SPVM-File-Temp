@@ -7,7 +7,7 @@ class TestCase::File::Temp::Dir {
   use IO::File;
   
   static method new : int () {
-
+    
     # Basic
     {
       my $dirname = (string)undef;
@@ -15,7 +15,42 @@ class TestCase::File::Temp::Dir {
         my $temp_dir = File::Temp::Dir->new;
         $dirname = $temp_dir->dirname;
         
-        warn "[Test Output]$dirname";
+        warn "[Test Output][File::Temp::Dir#new][dirname default]$dirname";
+        
+        unless (File::Spec->file_name_is_absolute($dirname)) {
+          return 0;
+        }
+        
+        my $file_spec_tmpdir = File::Spec->tmpdir;
+        unless (Fn->contains($dirname, $file_spec_tmpdir)) {
+          return 0;
+        }
+        
+        unless (Sys->d($dirname)) {
+          return 0;
+        }
+        
+        unless (Sys->w($dirname)) {
+          return 0;
+        }
+        
+        my $io_file = IO::File->new("$dirname/a.txt", ">");
+        $io_file = undef;
+      }
+      
+      if (Sys->d($dirname)) {
+        return 0;
+      }
+    }
+    
+    # TEMPLATE option
+    {
+      my $dirname = (string)undef;
+      {
+        my $temp_dir = File::Temp::Dir->new({TEMPLATE => "XXXX", TMPDIR => 1});
+        $dirname = $temp_dir->dirname;
+        
+        warn "[Test Output][File::Temp::Dir#new][dirname XXXX TMPDIR]$dirname";
         
         unless (File::Spec->file_name_is_absolute($dirname)) {
           return 0;

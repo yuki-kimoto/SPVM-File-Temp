@@ -175,6 +175,10 @@ class File::Temp extends IO::File {
       elsif ($tmpdir) {
         $template_path = File::Spec->catfile([File::Spec->tmpdir], $template);
       }
+      # Current working directory
+      else {
+        $template_path = $template;
+      }
     }
     else {
       my $tempxxx = Fn->repeat("X", 10);
