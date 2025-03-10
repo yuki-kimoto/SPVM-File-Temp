@@ -105,7 +105,7 @@ class File::Temp extends IO::File {
     
     my $SUFFIX = $self->{SUFFIX};
     
-    my $template = &_make_template($TEMPLATE, $DIR, $TMPDIR, $SUFFIX);
+    my $template = &_make_template_path($TEMPLATE, $DIR, $TMPDIR, $SUFFIX);
     
     my $suffixlen = length $SUFFIX;
     my $perms = 0666;
@@ -164,29 +164,30 @@ class File::Temp extends IO::File {
     
   }
   
-  private static method _make_template : string ($template : string, $DIR : string, $TMPDIR : int, $SUFFIX : string) {
+  private static method _make_template_path : string ($template : string, $dir : string, $tmpdir : int, $suffix : string) {
     
+    my $template_path = (string)undef;
     if ($template) {
-      if ($DIR) {
-        $template = File::Spec->catfile([$DIR], $template);
+      if ($dir) {
+        $template_path = File::Spec->catfile([$dir], $template);
       }
-      elsif ($TMPDIR) {
-        $template = File::Spec->catfile([File::Spec->tmpdir], $template);
+      elsif ($tmpdir) {
+        $template_path = File::Spec->catfile([File::Spec->tmpdir], $template);
       }
     }
     else {
       my $tempxxx = Fn->repeat("X", 10);
-      if ($DIR) {
-        $template = File::Spec->catfile([$DIR], $tempxxx);
+      if ($dir) {
+        $template_path = File::Spec->catfile([$dir], $tempxxx);
       }
       else {
-        $template = File::Spec->catfile([File::Spec->tmpdir], $tempxxx);
+        $template_path = File::Spec->catfile([File::Spec->tmpdir], $tempxxx);
       }
     }
     
-    $template .= $SUFFIX;
+    $template_path .= $suffix;
     
-    return $template;
+    return $template_path;
   }
   
   private static method _replace_XX : string ($template : string) {
