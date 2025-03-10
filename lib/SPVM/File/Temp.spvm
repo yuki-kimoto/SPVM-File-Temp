@@ -105,19 +105,19 @@ class File::Temp extends IO::File {
     
     my $SUFFIX = $self->{SUFFIX};
     
-    my $template = &_make_template_path($TEMPLATE, $DIR, $TMPDIR, $SUFFIX);
+    my $template_path = &_make_template_path($TEMPLATE, $DIR, $TMPDIR, $SUFFIX);
     
     my $suffixlen = length $SUFFIX;
     my $perms = 0666;
     
-    my $start = length $template - 1 - $suffixlen;
+    my $start = length $template_path - 1 - $suffixlen;
     
     my $minx = 4;
-    if (Fn->substr($template, $start - $minx + 1, $minx) ne Fn->repeat("X", $minx)) {
+    if (Fn->substr($template_path, $start - $minx + 1, $minx) ne Fn->repeat("X", $minx)) {
       die "The template must end with at least " . $minx . " \"X\" characters.";
     }
     
-    my $parts = File::Spec->splitpath($template);
+    my $parts = File::Spec->splitpath($template_path);
     my $volume = $parts->[0];
     my $directories = $parts->[1];
     my $file = $parts->[2];
@@ -141,7 +141,7 @@ class File::Temp extends IO::File {
     my $try_count = 0;
     while ($try_count < $max_try_count) {
       
-      my $path = &_replace_XX($template);
+      my $path = &_replace_XX($template_path);
       
       eval {
         my $flags = IOC->O_CREAT | IOC->O_EXCL | IOC->O_RDWR;
@@ -159,7 +159,7 @@ class File::Temp extends IO::File {
     }
     
     if ($try_count == $max_try_count) {
-      die "tried to get a new temp name different to the previous value $max_try_count times.\nsomething wrong with template?? ($template)";
+      die "tried to get a new temp name different to the previous value $max_try_count times.\nsomething wrong with template?? ($template_path)";
     }
     
   }
