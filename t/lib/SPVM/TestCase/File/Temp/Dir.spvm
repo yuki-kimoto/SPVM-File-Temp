@@ -225,6 +225,43 @@ class TestCase::File::Temp::Dir {
       }
     }
     
+    # CLEANUP
+    {
+      my $dirname = (string)undef;
+      {
+        my $temp_dir = File::Temp::Dir->new({CLEANUP => 0});
+        $dirname = $temp_dir->dirname;
+        
+        warn "[Test Output][File::Temp::Dir#new][dirname CLENAUP]$dirname";
+        
+        unless (File::Spec->file_name_is_absolute($dirname)) {
+          return 0;
+        }
+        
+        my $file_spec_tmpdir = File::Spec->tmpdir;
+        unless (Fn->contains($dirname, $file_spec_tmpdir)) {
+          return 0;
+        }
+        
+        unless (Sys->d($dirname)) {
+          return 0;
+        }
+        
+        unless (Sys->w($dirname)) {
+          return 0;
+        }
+        
+        my $io_file = IO::File->new("$dirname/a.txt", ">");
+        $io_file = undef;
+      }
+      
+      unless (Sys->d($dirname)) {
+        return 0;
+      }
+      
+      File::Path->rmtree($dirname);
+    }
+    
     return 1;
   }
 }
