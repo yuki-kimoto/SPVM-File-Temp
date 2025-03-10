@@ -27,7 +27,7 @@ The File::Temp::Dir class in L<SPVM> has methods to manipulate temporary directo
 
 C<has dirname : ro string;>
 
-A directory name. This is the path of a temporary directoy.
+A directory path. This is the path of a temporary directoy.
 
 =head2 process_id
 
@@ -57,7 +57,7 @@ A directory where a temproary directory is created.
 
 C<TMPDIR> : L<Int|SPVM::Int> = 0
 
-If the value of L</"TEMPLATE option"> is a true value but the value of L</"DIR option"> is a false value, the temporary directory in the system is used as the value of L</"DIR option">.
+If this value is a true value and the value of L</"TEMPLATE option"> is defined but the value of L</"DIR option"> is not defined, the temporary directory in the system is used as the value of L</"DIR option">.
 
 =head4 TEMPLATE option
 

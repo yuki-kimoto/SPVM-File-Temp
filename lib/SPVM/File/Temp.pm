@@ -35,6 +35,20 @@ File::Temp class in L<SPVM> has methods to create temporary files and directorie
 
 L<IO::File>
 
+=head1 Fields
+
+=head2 filename
+
+C<has filename : ro string;>
+
+A file path. This is the path of a temporary file.
+
+=head2 process_id
+
+C<has process_id : int;>
+
+A process ID. This is the process ID of the process that creates a temporary file.
+
 =head1 Class Methods
 
 =head2 new
@@ -43,37 +57,41 @@ C<static method new : L<File::Temp|SPVM::File::Temp> ($options : object[] = unde
 
 Creates a new L<File::Temp|SPVM::File::Temp> object given the options $options, and returns it.
 
+L</"process_id"> field is set to the current process ID.
+
 =head3 new Options
 
 =head4 DIR option
 
-C<DIR>
+C<DIR> : string = undef
 
-Type:string, Default:undef
+A directory where a temproary file is created.
 
 =head4 TMPDIR option
 
-C<TMPDIR>
+C<TMPDIR> : L<Int|SPVM::Int> = 0
 
-Type:L<Int|SPVM::Int>, Default:0
+If this value is a true value and the value of L</"TEMPLATE option"> is defined but the value of L</"DIR option"> is not defined, the temporary directory in the system is used as the value of L</"DIR option">.
 
 =head4 TEMPLATE option
 
-C<TEMPLATE>
+C<TEMPLATE> : string = undef
 
-Type:string, Default:undef
+A template. This is the template for the base name of the temporary file and contains multiple C<X> such as C<tempXXXXX>.
 
 =head4 SUFFIX option
 
-C<SUFFIX>
+C<SUFFIX> : string = ""
 
-Type:string, Default:""
+An extension of the temprary file such as C<.tmp>.
 
 =head4 UNLINK option
 
-C<UNLINK>
+C<UNLINK> : L<Int|SPVM::Int> = 1
 
-Type:L<Int|SPVM::Int>, Default:1
+If this value is a true value, the program tries to remove the temporary file when this instance is destroyed.
+
+See L</"DESTROY"> method for details.
 
 =head2 newdir
 
@@ -85,10 +103,9 @@ Calls L<File::Temp::Dir#new|SPVM::File::Temp::Dir/new> method given the options 
 
 C<method DESTROY : void ();>
 
-Closes the file descriptor if the file handle is opend.
+If the file handle is opened, closes the file descriptor of the temporary file.
 
-If L</"UNLINK option"> is a true value and the process ID of the process that created the temporary file is the same as the current process ID,
-removes the temporary file.
+If the vlaue of L</"UNLINK option"> is a true value and the current process ID is the same as L</"process_id"> field, removes the temproary file.
 
 =head1 Repository
 
