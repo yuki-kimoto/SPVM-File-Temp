@@ -124,6 +124,80 @@ class TestCase::File::Temp::Dir {
       }
     }
     
+    # DIR option
+    {
+      my $dirname = (string)undef;
+      {
+        my $temp_dir = File::Temp::Dir->new({DIR => File::Spec->tmpdir});
+        $dirname = $temp_dir->dirname;
+        
+        warn "[Test Output][File::Temp::Dir#new][DIR]$dirname";
+        
+        unless (File::Spec->file_name_is_absolute($dirname)) {
+          return 0;
+        }
+        
+        my $file_spec_tmpdir = File::Spec->tmpdir;
+        unless (Fn->contains($dirname, $file_spec_tmpdir)) {
+          return 0;
+        }
+        
+        unless (Sys->d($dirname)) {
+          return 0;
+        }
+        
+        unless (Sys->w($dirname)) {
+          return 0;
+        }
+        
+        my $io_file = IO::File->new("$dirname/a.txt", ">");
+        $io_file = undef;
+      }
+      
+      if (Sys->d($dirname)) {
+        return 0;
+      }
+    }
+    
+    # DIR, TEMPLATE option
+    {
+      my $dirname = (string)undef;
+      {
+        my $temp_dir = File::Temp::Dir->new({TEMPLATE => "my_XXXX", DIR => File::Spec->tmpdir});
+        $dirname = $temp_dir->dirname;
+        
+        warn "[Test Output][File::Temp::Dir#new][dirname TEMPLATE DIR]$dirname";
+        
+        unless (Fn->contains($dirname, "my_")) {
+          return 0;
+        }
+        
+        unless (File::Spec->file_name_is_absolute($dirname)) {
+          return 0;
+        }
+        
+        my $file_spec_tmpdir = File::Spec->tmpdir;
+        unless (Fn->contains($dirname, $file_spec_tmpdir)) {
+          return 0;
+        }
+        
+        unless (Sys->d($dirname)) {
+          return 0;
+        }
+        
+        unless (Sys->w($dirname)) {
+          return 0;
+        }
+        
+        my $io_file = IO::File->new("$dirname/a.txt", ">");
+        $io_file = undef;
+      }
+      
+      if (Sys->d($dirname)) {
+        return 0;
+      }
+    }
+    
     # Repeat
     {
       my $temp_dirs_list = List->new;
