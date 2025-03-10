@@ -11,6 +11,9 @@ class File::Temp::Dir {
   # Fields
   has dirname : ro string;
   
+  has process_id : int;
+  
+  # Undocumented Fields
   has DIR : string;
   
   has TMPDIR : byte;
@@ -18,8 +21,6 @@ class File::Temp::Dir {
   has TEMPLATE : string;
   
   has CLEANUP : byte;
-  
-  has process_id : int;
   
   # Class Methods
   static method new : File::Temp::Dir ($options : object[]) {

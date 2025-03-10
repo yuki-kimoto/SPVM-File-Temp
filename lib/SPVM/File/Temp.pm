@@ -77,9 +77,9 @@ Type:L<Int|SPVM::Int>, Default:1
 
 =head2 newdir
 
-C<static method newdir : L<File::Temp::Dir|SPVM::File::Temp::Dir> ();>
+C<static method newdir : L<File::Temp::Dir|SPVM::File::Temp::Dir> ($options : object[] = undef);>
 
-Creates a new L<File::Temp::Dir|SPVM::File::Temp::Dir> object for a temporary directory, and returns it.
+Calls L<File::Temp::Dir#new|SPVM::File::Temp::Dir/new> method given the options $options, and retunrs its return value.
 
 =head2 DESTROY
 

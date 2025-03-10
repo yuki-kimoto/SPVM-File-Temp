@@ -117,9 +117,7 @@ class File::Temp extends IO::File {
       die "The template must end with at least " . $minx . " \"X\" characters.";
     }
     
-    my $path = &_replace_XX($template);
-    
-    my $parts = File::Spec->splitpath($path);
+    my $parts = File::Spec->splitpath($template);
     my $volume = $parts->[0];
     my $directories = $parts->[1];
     my $file = $parts->[2];
@@ -138,31 +136,32 @@ class File::Temp extends IO::File {
       die "Parent directory ($parent) is not a directory";
     }
     
+    my $found_path = (string)undef;
     my $max_try_count = 1000;
-    for (my $i = 0; $i < $max_try_count; $i++) {
+    my $try_count = 0;
+    while ($try_count < $max_try_count) {
+      
+      my $path = &_replace_XX($template);
       
       eval {
         my $flags = IOC->O_CREAT | IOC->O_EXCL | IOC->O_RDWR;
         my $fd = -1;
         Sys->sysopen(\$fd, $path, $flags, $perms);
         $self->fdopen($fd, $flags);
+        $found_path = $path;
       }
       
-      my $original = $path;
-      my $counter = 0;
-      my $max_guess = 50;
-      while (1) {
-        $path = &_replace_XX($template);
-        $counter++;
-        if ($path ne $original || $counter > $max_guess) {
-          last;
-        }
-      } 
-      
-      if ($counter > $max_guess) {
-        die "tried to get a new temp name different to the previous value $max_guess times.\nsomething wrong with template?? ($template)";
+      unless ($@) {
+        last;
       }
+      
+      $try_count++;
     }
+    
+    if ($try_count == $max_try_count) {
+      die "tried to get a new temp name different to the previous value $max_try_count times.\nsomething wrong with template?? ($template)";
+    }
+    
   }
   
   private static method _make_template : string ($template : string, $DIR : string, $TMPDIR : int, $SUFFIX : string) {
