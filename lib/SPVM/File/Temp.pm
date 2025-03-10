@@ -79,6 +79,10 @@ C<TEMPLATE> : string = undef
 
 A template. This is the template for the base name of the temporary file and contains multiple C<X> such as C<tempXXXXX>.
 
+Note:
+
+If the value of this option is defined and the value of L</"DIR"> option is not defined and the value of L</"TMPDIR"> option is not a true value, a temporary file is created in the current working directry.
+
 =head4 SUFFIX option
 
 C<SUFFIX> : string = ""
