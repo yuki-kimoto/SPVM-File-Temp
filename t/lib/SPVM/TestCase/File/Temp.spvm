@@ -268,6 +268,57 @@ class TestCase::File::Temp {
       File::Path->rmtree($filename);
     }
     
+    # SUFFIX option
+    {
+      my $filename = (string)undef;
+      {
+        my $temp_file = File::Temp->new({SUFFIX => ".dat"});
+        $filename = $temp_file->filename;
+        
+        warn "[Test Output][File::Temp#new][filename SUFFIX]$filename";
+        
+        unless (Fn->contains($filename, ".dat")) {
+          return 0;
+        }
+        
+        unless (File::Spec->file_name_is_absolute($filename)) {
+          return 0;
+        }
+        my $file_spec_tmpdir = File::Spec->tmpdir;
+        unless (Fn->contains($filename, $file_spec_tmpdir)) {
+          return 0;
+        }
+        
+        unless (Sys->f($filename)) {
+          return 0;
+        }
+        
+        unless (Sys->w($filename)) {
+          return 0;
+        }
+        
+        my $buffer = (mutable string)new_string_len 128;
+        
+        $temp_file->read($buffer, length $buffer);
+        
+        $temp_file->print("Hello");
+        
+        $temp_file->close;
+        
+        my $fh = IO->open("<", $filename);
+        
+        my $content = $fh->getlines;
+        
+        unless ($content eq "Hello") {
+          return 0;
+        }
+      }
+      
+      if (Sys->f($filename)) {
+        return 0;
+      }
+    }
+    
     return 1;
   }
   
