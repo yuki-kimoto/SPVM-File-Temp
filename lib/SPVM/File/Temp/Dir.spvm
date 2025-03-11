@@ -70,16 +70,13 @@ class File::Temp::Dir {
         
         my $dirname = $self->{dirname};
         
-        unless ($dirname) {
-          die "[Unexpected Error]\$dirname must be defined.";
+        if ($dirname) {
+          eval { File::Path->rmtree($dirname); }
+          
+          if ($@) {
+            warn $@;
+          }
         }
-        
-        eval { File::Path->rmtree($dirname); }
-        
-        if ($@) {
-          warn $@;
-        }
-        
       }
     }
     

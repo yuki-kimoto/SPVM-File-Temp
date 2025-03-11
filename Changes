@@ -2,7 +2,7 @@
   [Bug Fix]
     * Fix a bug that File::Temp::Dir#new method's arguments were not optional.
     * Fix TEMPLATE option.
-    
+    * Fix a bug that a temporary file can not be written.
   [Test Improvement]
     * Add many tests.
     

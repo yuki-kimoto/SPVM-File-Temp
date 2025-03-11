@@ -89,8 +89,16 @@ class File::Temp extends IO::File {
       my $was_created_by_proc = $self->{process_id} == Sys->process_id;
       if ($was_created_by_proc) {
         my $file = $self->filename;
-        Sys->chmod(0600, $file); # for windows
-        Sys->unlink($file);
+        if ($file) {
+          eval {
+            Sys->chmod(0600, $file); # for windows
+            Sys->unlink($file);
+          }
+          
+          if ($@) {
+            warn $@;
+          }
+        }
       }
     }
     
@@ -137,7 +145,6 @@ class File::Temp extends IO::File {
       die "Parent directory ($parent) is not a directory";
     }
     
-    my $found_path = (string)undef;
     my $max_try_count = 1000;
     my $try_count = 0;
     while ($try_count < $max_try_count) {
@@ -148,11 +155,12 @@ class File::Temp extends IO::File {
         my $flags = IOC->O_CREAT | IOC->O_EXCL | IOC->O_RDWR;
         my $fd = -1;
         Sys->sysopen(\$fd, $path, $flags, $perms);
-        $self->fdopen($fd, $flags);
-        $found_path = $path;
+        my $mode = "w+b";
+        $self->fdopen($fd, $mode);
       }
       
       unless ($@) {
+        $self->{filename} = $path;
         last;
       }
       

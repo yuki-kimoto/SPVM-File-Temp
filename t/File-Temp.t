@@ -16,6 +16,8 @@ my $api = SPVM::api();
 
 my $start_memory_blocks_count = $api->get_memory_blocks_count();
 
+ok(SPVM::TestCase::File::Temp->new);
+
 ok(SPVM::TestCase::File::Temp->newdir);
 
 # Version
