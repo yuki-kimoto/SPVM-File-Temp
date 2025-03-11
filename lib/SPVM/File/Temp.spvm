@@ -91,7 +91,6 @@ class File::Temp extends IO::File {
         my $file = $self->filename;
         if ($file) {
           eval {
-            Sys->chmod(0600, $file); # for windows
             Sys->unlink($file);
           }
           
