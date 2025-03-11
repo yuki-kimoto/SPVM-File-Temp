@@ -117,7 +117,7 @@ class File::Temp extends IO::File {
     my $template_path = &_make_template_path($TEMPLATE, $DIR, $TMPDIR, $SUFFIX);
     
     my $suffixlen = length $SUFFIX;
-    my $perms = 0666;
+    my $perms = 0600;
     
     my $start = length $template_path - 1 - $suffixlen;
     
