@@ -79,10 +79,7 @@ class File::Temp extends IO::File {
   
   method DESTROY : void () {
     
-    # TODO: $self->SUPER::DESTROY;
-    if ($self->opened) {
-      $self->close;
-    }
+    $self->SUPER::DESTROY;
     
     my $UNLINK = $self->{UNLINK};
     if ($UNLINK) {
