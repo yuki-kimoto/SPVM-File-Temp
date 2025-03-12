@@ -45,9 +45,6 @@ class TestCase::File::Temp {
         
         my $content = $fh->getlines;
         
-        # TODO: this is not needed ideally
-        $fh->close;
-        
         unless ($content eq "Hello") {
           return 0;
         }
