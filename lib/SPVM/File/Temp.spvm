@@ -2,7 +2,7 @@
 # MIT License
 
 class File::Temp extends IO::File {
-  version "0.027";
+  version "0.028";
   
   allow File::Temp::Dir;
   
